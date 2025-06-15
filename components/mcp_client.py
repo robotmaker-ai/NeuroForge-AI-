@@ -22,7 +22,7 @@ class MCPClient:
             if tool.id not in self.capabilities[capability]: # Avoid duplicate tool_ids for the same capability
                 self.capabilities[capability].append(tool.id)
 
-    def execute_task(self, task_name: str, task_args: Dict[str, Any]) -> Dict[str, Any]:
+    async def execute_task(self, task_name: str, task_args: Dict[str, Any]) -> Dict[str, Any]:
         # For now, task_name is considered a capability
         if task_name in self.capabilities and self.capabilities[task_name]:
             tool_id_to_use = self.capabilities[task_name][0] # Use the first available tool
