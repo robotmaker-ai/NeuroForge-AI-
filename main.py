@@ -2,13 +2,16 @@ import asyncio
 from fastapi import FastAPI
 from typing import List, Dict, Any, Optional
 
-from components.mcp_client import MCPClient, MCPTool
+from components.mcp_client import MCPClient
+from components.models import MCPTool
 from components.capability_registry import CapabilityRegistry
+from components.tool_discovery import ToolDiscovery # New import
 
 # --- Global Variables ---
-# These will be initialized by setup_essential_tools()
+# These will be initialized by setup_essential_tools() or module load
 mcp_client: MCPClient
 capability_registry: CapabilityRegistry
+tool_discoverer: ToolDiscovery # New global instance
 
 # --- Essential Tools Setup ---
 ESSENTIAL_TOOLS_LIST = [
@@ -52,8 +55,9 @@ def setup_essential_tools():
 
     return client, registry
 
-# Initialize client and registry globally
+# Initialize client, registry, and discoverer globally
 mcp_client, capability_registry = setup_essential_tools()
+tool_discoverer = ToolDiscovery() # Initialize the new ToolDiscovery service
 
 # --- FastAPI App Instantiation ---
 app = FastAPI()
@@ -73,23 +77,7 @@ def analyze_capabilities(query: str) -> List[str]:
         return ["web_search"]
     return ["unknown_capability"] # Default if no keywords match
 
-async def discover_tools_placeholder(capabilities_needed: List[str]) -> List[MCPTool]:
-    """
-    Discovers tools that can provide the given capabilities.
-    Placeholder: Returns a dummy tool if 'text_summarization' is needed.
-    """
-    print(f"Discovering tools for capabilities: {capabilities_needed}")
-    discovered_tools = []
-    if "text_summarization" in capabilities_needed:
-        # Simulate discovering a new tool for text_summarization
-        summarization_tool = MCPTool(
-            id="summarizer_001",
-            name="Text Summarization Tool",
-            capabilities=["text_summarization"]
-        )
-        discovered_tools.append(summarization_tool)
-        print(f"Discovered tool: {summarization_tool.name}")
-    return discovered_tools
+# REMOVED: discover_tools_placeholder function
 
 async def integrate_tool_placeholder(tool: MCPTool):
     """
@@ -151,11 +139,12 @@ async def process_query_endpoint(query: str): # Using query: str for simplicity 
     # 4. If a capability is missing, try to discover and integrate tools
     if not all_required_available and missing_capability_found:
         print(f"Attempting to discover tools for missing capability: {missing_capability_found}")
-        # Pass a list with the specific missing capability we are trying to resolve now
-        discovered_tools = await discover_tools_placeholder([missing_capability_found])
+        # Call the new synchronous search_github method from tool_discoverer
+        # Pass the single string missing_capability_found directly
+        discovered_tools = tool_discoverer.search_github(missing_capability_found)
 
         if discovered_tools:
-            print(f"Discovered {len(discovered_tools)} tool(s). Integrating them...")
+            print(f"Discovered {len(discovered_tools)} tool(s) via GitHub search. Integrating them...")
             for tool in discovered_tools:
                 await integrate_tool_placeholder(tool)
                 mcp_client.register_tool(tool)

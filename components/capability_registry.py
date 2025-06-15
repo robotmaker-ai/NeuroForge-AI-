@@ -1,5 +1,5 @@
 from typing import List, Dict, Optional, Set
-from components.mcp_client import MCPTool # Assuming MCPTool is in this path
+from components.models import MCPTool # Updated import
 
 class CapabilityRegistry:
     def __init__(self):

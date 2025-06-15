@@ -1,10 +1,5 @@
 from typing import List, Dict, Any
-
-class MCPTool:
-    def __init__(self, id: str, name: str, capabilities: List[str]):
-        self.id = id
-        self.name = name
-        self.capabilities = capabilities
+from components.models import MCPTool
 
 class MCPClient:
     def __init__(self):
